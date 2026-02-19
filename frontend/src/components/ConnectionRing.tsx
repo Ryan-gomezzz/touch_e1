@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { getInitials, getHealthColor, COLORS } from '../src/theme';
+import { getInitials, getHealthColor, COLORS } from '../theme';
 
 interface Props {
   name: string;
