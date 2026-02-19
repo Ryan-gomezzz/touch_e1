@@ -75,6 +75,42 @@ Touch is a privacy-first personal relationship CRM designed to help busy people 
 - Delete All Data
 - Privacy Policy & Terms of Service links
 
+### 10. Voice Recording & Speech-to-Text
+- Record voice notes using expo-av
+- AI transcription via OpenAI Whisper (whisper-1)
+- Auto-fills interaction notes with transcript
+- Duration timer with recording indicator
+
+### 11. Smart Calendar Integration
+- AI-suggested optimal call times per contact
+- Based on past interaction patterns
+- Suggests day, time, and reason
+- Duration recommendations and scheduling tips
+
+### 12. Gentle Reminders/Notifications
+- Priority-based reminder system (gentle → warm)
+- Respects Low Pressure Mode settings
+- Shows days overdue per contact
+- Quick actions: Log Touch or Call Prep directly
+
+### 13. Shared Mode (Couples & Co-Parents)
+- Invite partner or co-parent to share tracking
+- Select specific contacts to share
+- Couple / Co-Parent mode toggle
+- View shared connection status
+
+### 14. Home Screen Widget
+- Beautiful dark-themed widget preview
+- Shows pinned contacts with connection rings
+- Displays suggested contact for today
+- 3 size options: Small (2 contacts), Medium (4), Large (4 + suggestion)
+- Step-by-step setup instructions
+
+### 15. Freemium Model
+- **Free tier**: 5 contacts, basic tracking, connection rings, interaction logging
+- **Plus ($4.99/mo)**: Unlimited contacts, AI Call Prep, AI Insights, Voice Recording, Calendar Suggestions
+- **Premium ($9.99/mo)**: Everything in Plus + Shared Mode, Advanced Memory Bank, Custom Reminders, Family Plan
+
 ## API Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -92,6 +128,14 @@ Touch is a privacy-first personal relationship CRM designed to help busy people 
 | GET/POST | /api/goals | List/Create goals |
 | PUT/DELETE | /api/goals/{id} | Update/Delete goal |
 | GET/PUT | /api/settings | Get/Update settings |
+| GET | /api/notifications/pending | Pending gentle reminders |
+| POST | /api/shared/invite | Create shared invitation |
+| GET | /api/shared/invites | List shared invites |
+| GET | /api/shared/contacts | Shared contacts |
+| GET | /api/calendar/suggest-times/{id} | AI-suggested call times |
+| GET | /api/premium/status | Premium tier status |
+| PUT | /api/premium/upgrade | Upgrade premium tier |
+| GET | /api/widget/data | Widget data |
 | GET | /api/data/export | Export all data |
 | DELETE | /api/data/delete-all | Delete all data |
 
