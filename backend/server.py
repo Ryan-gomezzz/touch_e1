@@ -686,6 +686,182 @@ async def seed_data():
 
     return {"message": f"Seeded {len(created)} contacts with interactions", "contact_ids": created}
 
+# --- NOTIFICATIONS/REMINDERS ---
+@api_router.get("/notifications/pending")
+async def get_pending_reminders():
+    contacts = await db.contacts.find({"is_archived": False}, {"_id": 0}).to_list(500)
+    settings = await db.settings.find_one({"id": "default"}, {"_id": 0})
+    low_pressure = settings.get("low_pressure_mode", False) if settings else False
+    intensity = settings.get("notification_intensity", 50) if settings else 50
+
+    reminders = []
+    for c in contacts:
+        health = calc_connection_health(c.get("last_interaction_at"), c.get("frequency_days", 7))
+        if health < 40:
+            priority = "gentle"
+            if health < 15:
+                priority = "warm"
+            if low_pressure and health > 20:
+                continue
+            if intensity < 30 and health > 25:
+                continue
+            days_overdue = 0
+            if c.get("last_interaction_at"):
+                last = datetime.fromisoformat(c["last_interaction_at"].replace('Z', '+00:00'))
+                elapsed = (datetime.now(timezone.utc) - last).total_seconds() / 86400
+                days_overdue = max(0, int(elapsed - c.get("frequency_days", 7)))
+            messages = {
+                "gentle": f"It's been a while since you connected with {c['name']}. Maybe a quick message?",
+                "warm": f"{c['name']} might appreciate hearing from you today.",
+            }
+            reminders.append({
+                "id": f"reminder-{c['id']}",
+                "contact_id": c["id"],
+                "contact_name": c["name"],
+                "relationship_tag": c.get("relationship_tag", "Other"),
+                "message": messages[priority],
+                "health": health,
+                "days_overdue": days_overdue,
+                "priority": priority,
+                "status": "pending",
+                "avatar_color": c.get("avatar_color", "#40916C"),
+            })
+
+    reminders.sort(key=lambda x: x["health"])
+    return {"reminders": reminders[:10], "total": len(reminders)}
+
+# --- SHARED MODE ---
+@api_router.post("/shared/invite")
+async def create_shared_invite(data: SharedInvite):
+    invite = {
+        "id": str(uuid.uuid4()),
+        "partner_name": data.partner_name,
+        "partner_email": data.partner_email,
+        "shared_contact_ids": data.shared_contact_ids,
+        "mode": data.mode,
+        "status": "pending",
+        "created_at": now_iso(),
+    }
+    await db.shared_invites.insert_one({**invite, "_id": invite["id"]})
+    return invite
+
+@api_router.get("/shared/invites")
+async def get_shared_invites():
+    invites = await db.shared_invites.find({}, {"_id": 0}).to_list(50)
+    return {"invites": invites}
+
+@api_router.get("/shared/contacts")
+async def get_shared_contacts():
+    invites = await db.shared_invites.find({"status": "accepted"}, {"_id": 0}).to_list(10)
+    shared_ids = []
+    for inv in invites:
+        shared_ids.extend(inv.get("shared_contact_ids", []))
+    if not shared_ids:
+        return {"contacts": [], "partner": None}
+    contacts = await db.contacts.find({"id": {"$in": shared_ids}}, {"_id": 0}).to_list(100)
+    for c in contacts:
+        c["connection_health"] = calc_connection_health(c.get("last_interaction_at"), c.get("frequency_days", 7))
+    return {"contacts": contacts, "partner": invites[0].get("partner_name") if invites else None}
+
+# --- CALENDAR/AVAILABILITY ---
+@api_router.get("/calendar/suggest-times/{contact_id}")
+async def suggest_call_times(contact_id: str):
+    contact = await db.contacts.find_one({"id": contact_id}, {"_id": 0})
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    interactions = await db.interactions.find({"contact_id": contact_id}, {"_id": 0}).sort("created_at", -1).to_list(10)
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        interaction_times = []
+        for i in interactions:
+            try:
+                dt = datetime.fromisoformat(i["created_at"].replace('Z', '+00:00'))
+                interaction_times.append(f"{dt.strftime('%A')} at {dt.strftime('%I:%M %p')}")
+            except Exception:
+                pass
+        time_patterns = ", ".join(interaction_times[:5]) if interaction_times else "No pattern data available"
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"calendar-{uuid.uuid4()}",
+            system_message="""You are a scheduling assistant for Touch, a relationship CRM.
+Based on past interaction patterns, suggest optimal call times.
+Return JSON with:
+- "suggested_times": Array of 3 objects with "day" (e.g. "Monday"), "time" (e.g. "6:30 PM"), "reason" (brief)
+- "best_duration": Suggested call duration in minutes
+- "availability_tip": One gentle scheduling tip
+Return ONLY valid JSON."""
+        )
+        chat.with_model("gemini", "gemini-3-flash-preview")
+        response = await chat.send_message(UserMessage(text=f"Past interaction times for {contact['name']} ({contact['relationship_tag']}): {time_patterns}. Frequency goal: every {contact['frequency_days']} days."))
+        cleaned = response.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+        result = json.loads(cleaned)
+        result["contact_name"] = contact["name"]
+        return result
+    except Exception as e:
+        logger.error(f"Calendar suggest error: {e}")
+        return {
+            "contact_name": contact["name"],
+            "suggested_times": [
+                {"day": "Saturday", "time": "10:00 AM", "reason": "Weekend mornings are usually free"},
+                {"day": "Wednesday", "time": "7:00 PM", "reason": "Mid-week evening wind-down"},
+                {"day": "Sunday", "time": "5:00 PM", "reason": "Sunday catch-up time"},
+            ],
+            "best_duration": 15,
+            "availability_tip": "Short, frequent calls often feel better than long infrequent ones."
+        }
+
+# --- PREMIUM ---
+@api_router.get("/premium/status")
+async def get_premium_status():
+    settings = await db.settings.find_one({"id": "default"}, {"_id": 0})
+    tier = settings.get("premium_tier", "free") if settings else "free"
+    contact_count = await db.contacts.count_documents({"is_archived": False})
+    return {
+        "tier": tier,
+        "contact_limit": 5 if tier == "free" else 999,
+        "contacts_used": contact_count,
+        "features": {
+            "ai_call_prep": tier != "free",
+            "ai_insights": tier != "free",
+            "voice_recording": tier != "free",
+            "shared_mode": tier == "premium",
+            "unlimited_contacts": tier != "free",
+            "calendar_suggestions": tier != "free",
+            "advanced_memory_bank": tier == "premium",
+        },
+        "plans": [
+            {"id": "free", "name": "Free", "price": "$0", "contacts": 5, "features": ["Basic contact tracking", "Connection rings", "5 contacts", "Interaction logging"]},
+            {"id": "plus", "name": "Plus", "price": "$4.99/mo", "contacts": 999, "features": ["Unlimited contacts", "AI Call Prep", "AI Insights", "Voice Recording", "Calendar Suggestions", "Priority Support"]},
+            {"id": "premium", "name": "Premium", "price": "$9.99/mo", "contacts": 999, "features": ["Everything in Plus", "Shared Mode", "Advanced Memory Bank", "Custom Reminders", "Data Analytics", "Family Plan (up to 4)"]},
+        ]
+    }
+
+@api_router.put("/premium/upgrade")
+async def upgrade_premium(tier: str = "plus"):
+    await db.settings.update_one({"id": "default"}, {"$set": {"premium_tier": tier}}, upsert=True)
+    return {"message": f"Upgraded to {tier}", "tier": tier}
+
+# --- WIDGET DATA ---
+@api_router.get("/widget/data")
+async def get_widget_data():
+    contacts = await db.contacts.find({"is_pinned": True, "is_archived": False}, {"_id": 0}).to_list(4)
+    for c in contacts:
+        c["connection_health"] = calc_connection_health(c.get("last_interaction_at"), c.get("frequency_days", 7))
+    dashboard = await get_dashboard()
+    return {
+        "pinned_contacts": [
+            {"name": c["name"], "health": c["connection_health"], "avatar_color": c.get("avatar_color", "#40916C"), "relationship_tag": c.get("relationship_tag", "Friend")}
+            for c in contacts
+        ],
+        "overall_score": dashboard.get("overall_score", 0),
+        "suggested_name": dashboard.get("suggested_contact", {}).get("name") if dashboard.get("suggested_contact") else None,
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
