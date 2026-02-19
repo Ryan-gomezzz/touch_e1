@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="8" time="0.201" timestamp="2026-02-19T17:02:19.214979+00:00" hostname="agent-env-57545300-3e60-4521-a634-19195efcb91a"><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_health_check" time="0.002"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/': No scheme supplied. Perhaps you meant https://None/api/?">tests/test_iteration3_smoke.py:17: in test_health_check
+    response = requests.get(f"{BASE_URL}/api/")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/': No scheme supplied. Perhaps you meant https://None/api/?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_contacts_endpoint" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/contacts': No scheme supplied. Perhaps you meant https://None/api/contacts?">tests/test_iteration3_smoke.py:24: in test_contacts_endpoint
+    response = requests.get(f"{BASE_URL}/api/contacts")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/contacts': No scheme supplied. Perhaps you meant https://None/api/contacts?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_dashboard_endpoint" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/dashboard': No scheme supplied. Perhaps you meant https://None/api/dashboard?">tests/test_iteration3_smoke.py:31: in test_dashboard_endpoint
+    response = requests.get(f"{BASE_URL}/api/dashboard")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/dashboard': No scheme supplied. Perhaps you meant https://None/api/dashboard?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_settings_endpoint" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/settings': No scheme supplied. Perhaps you meant https://None/api/settings?">tests/test_iteration3_smoke.py:39: in test_settings_endpoint
+    response = requests.get(f"{BASE_URL}/api/settings")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/settings': No scheme supplied. Perhaps you meant https://None/api/settings?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_notifications_pending" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/notifications/pending': No scheme supplied. Perhaps you meant https://None/api/notifications/pending?">tests/test_iteration3_smoke.py:46: in test_notifications_pending
+    response = requests.get(f"{BASE_URL}/api/notifications/pending")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/notifications/pending': No scheme supplied. Perhaps you meant https://None/api/notifications/pending?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_premium_status" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/premium/status': No scheme supplied. Perhaps you meant https://None/api/premium/status?">tests/test_iteration3_smoke.py:54: in test_premium_status
+    response = requests.get(f"{BASE_URL}/api/premium/status")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/premium/status': No scheme supplied. Perhaps you meant https://None/api/premium/status?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_premium_upgrade" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/premium/upgrade?tier=plus': No scheme supplied. Perhaps you meant https://None/api/premium/upgrade?tier=plus?">tests/test_iteration3_smoke.py:62: in test_premium_upgrade
+    response = requests.put(f"{BASE_URL}/api/premium/upgrade?tier=plus")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:130: in put
+    return request("put", url, data=data, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/premium/upgrade?tier=plus': No scheme supplied. Perhaps you meant https://None/api/premium/upgrade?tier=plus?</failure></testcase><testcase classname="tests.test_iteration3_smoke.TestIteration3Smoke" name="test_widget_data" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL 'None/api/widget/data': No scheme supplied. Perhaps you meant https://None/api/widget/data?">tests/test_iteration3_smoke.py:71: in test_widget_data
+    response = requests.get(f"{BASE_URL}/api/widget/data")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL 'None/api/widget/data': No scheme supplied. Perhaps you meant https://None/api/widget/data?</failure></testcase></testsuite></testsuites>
