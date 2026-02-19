@@ -80,6 +80,17 @@ export const api = {
   getPremiumStatus: () => request('/premium/status'),
   upgradePremium: (tier: string) => request(`/premium/upgrade?tier=${tier}`, { method: 'PUT' }),
 
+  // Payment (Razorpay)
+  createOrder: (planId: string) => request(`/payment/create-order?plan_id=${planId}`, { method: 'POST' }),
+  verifyPayment: (data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; plan_id: string }) =>
+    request(`/payment/verify?razorpay_order_id=${data.razorpay_order_id}&razorpay_payment_id=${data.razorpay_payment_id}&razorpay_signature=${data.razorpay_signature}&plan_id=${data.plan_id}`, { method: 'POST' }),
+  getSubscription: () => request('/payment/subscription'),
+  cancelSubscription: () => request('/payment/cancel', { method: 'POST' }),
+
+  // Push Notifications
+  registerPushToken: (token: string, platform?: string) => request('/push/register', { method: 'POST', body: JSON.stringify({ token, platform }) }),
+  sendPushReminders: () => request('/push/send-reminders', { method: 'POST' }),
+
   // Widget
   getWidgetData: () => request('/widget/data'),
 
