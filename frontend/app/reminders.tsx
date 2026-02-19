@@ -127,6 +127,34 @@ export default function RemindersScreen() {
           ))
         )}
 
+        {/* Push Notification Controls */}
+        <View style={styles.notifCard}>
+          <View style={styles.notifHeader}>
+            <Feather name="bell" size={20} color="#2D6A4F" />
+            <View style={styles.notifInfo}>
+              <Text style={styles.notifTitle}>Push Notifications</Text>
+              <Text style={styles.notifStatus}>{notifEnabled ? `${scheduledCount} scheduled` : 'Not enabled'}</Text>
+            </View>
+          </View>
+          {notifEnabled ? (
+            <View style={styles.notifActions}>
+              <View style={styles.notifActiveBadge}>
+                <Feather name="check-circle" size={14} color="#2D6A4F" />
+                <Text style={styles.notifActiveText}>Active</Text>
+              </View>
+              <TouchableOpacity testID="disable-notif-btn" style={styles.notifDisableBtn} onPress={disableNotifications}>
+                <Text style={styles.notifDisableText}>Turn Off</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity testID="enable-notif-btn" style={styles.enableNotifBtn} onPress={enableNotifications}>
+              <Feather name="bell" size={16} color="#FFF" />
+              <Text style={styles.enableNotifText}>Enable Push Notifications</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.notifDesc}>Get gentle reminders when connections need attention. Includes daily check-ins and weekly reflections.</Text>
+        </View>
+
         {/* Notification Settings */}
         <View style={styles.settingsCard}>
           <Text style={styles.settingsTitle}>Notification Preferences</Text>
