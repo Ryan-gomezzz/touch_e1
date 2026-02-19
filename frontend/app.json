@@ -10,13 +10,19 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.touch.relationship.crm",
+      "buildNumber": "1",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Record voice notes for your conversations",
         "NSContactsUsageDescription": "Import contacts to track relationships",
-        "NSCalendarsUsageDescription": "Find free time to connect with people"
+        "NSCalendarsUsageDescription": "Find free time to connect with people",
+        "NSUserTrackingUsageDescription": "Touch does not track you. This is required by Apple.",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
       }
     },
     "android": {
+      "package": "com.touch.relationship.crm",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#2D6A4F"
@@ -25,7 +31,12 @@
       "permissions": [
         "RECORD_AUDIO",
         "READ_CONTACTS",
-        "READ_CALENDAR"
+        "READ_CALENDAR",
+        "POST_NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM",
+        "USE_EXACT_ALARM"
       ]
     },
     "web": {
@@ -43,10 +54,23 @@
           "resizeMode": "contain",
           "backgroundColor": "#F9F7F2"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#2D6A4F",
+          "defaultChannel": "touch-reminders"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "touch-relationship-crm"
+      }
     }
   }
 }
