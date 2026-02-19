@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../src/api';
@@ -9,36 +9,111 @@ export default function PaymentScreen() {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [gateway, setGateway] = useState<'stripe' | 'razorpay'>('stripe');
   const [processing, setProcessing] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
 
-  useEffect(() => { loadStatus(); }, []);
+  useEffect(() => { loadData(); }, []);
 
-  async function loadStatus() {
-    try { const s = await api.getPremiumStatus(); setStatus(s); }
-    catch (e) { console.error(e); }
+  async function loadData() {
+    try {
+      const [s, sub] = await Promise.all([api.getPremiumStatus(), api.getSubscription()]);
+      setStatus(s);
+      setSubscription(sub);
+    } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }
 
   async function handleSubscribe() {
     if (!selectedPlan) return;
     setProcessing(true);
-    // Payment gateway integration placeholder - will be connected when gateway is chosen
-    setTimeout(async () => {
-      try {
-        await api.upgradePremium(selectedPlan);
-        Alert.alert('Subscription Active', `You're now on the ${selectedPlan === 'plus' ? 'Plus' : 'Premium'} plan!`, [
-          { text: 'OK', onPress: () => router.back() }
-        ]);
-      } catch (e) { Alert.alert('Error', 'Subscription update failed'); }
-      finally { setProcessing(false); }
-    }, 1500);
+    try {
+      // 1. Create order on backend
+      const order = await api.createOrder(selectedPlan);
+
+      if (order.test_mode) {
+        // Test mode - simulate payment flow
+        Alert.alert(
+          'Razorpay Test Mode',
+          `This is a test payment for ${order.plan_name} (₹${order.amount / 100}/mo).\n\nIn production, the Razorpay checkout sheet will open here.\n\nSimulating successful payment...`,
+          [{
+            text: 'Simulate Payment',
+            onPress: async () => {
+              try {
+                const verification = await api.verifyPayment({
+                  razorpay_order_id: order.order_id,
+                  razorpay_payment_id: `pay_test_${Date.now()}`,
+                  razorpay_signature: 'test_signature',
+                  plan_id: selectedPlan,
+                });
+                Alert.alert('Subscription Active!', verification.message, [
+                  { text: 'OK', onPress: () => router.back() }
+                ]);
+              } catch (e) {
+                Alert.alert('Error', 'Payment verification failed');
+              }
+            }
+          }, { text: 'Cancel', style: 'cancel' }]
+        );
+      } else {
+        // Production mode - open Razorpay checkout
+        try {
+          const RazorpayCheckout = require('react-native-razorpay').default;
+          const options = {
+            description: `Touch ${order.plan_name} Subscription`,
+            image: 'https://your-cdn.com/touch-icon.png',
+            currency: order.currency,
+            key: order.razorpay_key_id,
+            amount: order.amount,
+            name: 'Touch',
+            order_id: order.order_id,
+            prefill: { email: '', contact: '' },
+            theme: { color: '#2D6A4F' },
+          };
+
+          const paymentData = await RazorpayCheckout.open(options);
+
+          // Verify payment
+          const verification = await api.verifyPayment({
+            razorpay_order_id: order.order_id,
+            razorpay_payment_id: paymentData.razorpay_payment_id,
+            razorpay_signature: paymentData.razorpay_signature,
+            plan_id: selectedPlan,
+          });
+
+          Alert.alert('Subscription Active!', verification.message, [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+        } catch (e: any) {
+          if (e?.code !== 'PAYMENT_CANCELLED') {
+            Alert.alert('Payment Failed', e?.description || 'Something went wrong');
+          }
+        }
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Could not create payment order');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function handleCancel() {
+    Alert.alert('Cancel Subscription', 'Are you sure you want to cancel? You\'ll lose access to premium features at the end of your billing period.', [
+      { text: 'Keep Plan', style: 'cancel' },
+      { text: 'Cancel Subscription', style: 'destructive', onPress: async () => {
+        try {
+          await api.cancelSubscription();
+          Alert.alert('Cancelled', 'Your subscription has been cancelled.');
+          await loadData();
+        } catch (e) { Alert.alert('Error', 'Could not cancel subscription'); }
+      }},
+    ]);
   }
 
   if (loading) return <SafeAreaView style={styles.container}><View style={styles.center}><ActivityIndicator size="large" color="#2D6A4F" /></View></SafeAreaView>;
 
   const plans = (status?.plans || []).filter((p: any) => p.id !== 'free');
   const currentTier = status?.tier || 'free';
+  const isSubscribed = subscription?.active && currentTier !== 'free';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -53,12 +128,35 @@ export default function PaymentScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Current Plan */}
         <View style={styles.currentPlan}>
-          <Text style={styles.currentLabel}>Current Plan</Text>
-          <View style={styles.currentBadge}>
-            <Feather name={currentTier === 'free' ? 'user' : 'award'} size={16} color={currentTier === 'free' ? '#636E72' : '#E9C46A'} />
-            <Text style={styles.currentName}>{currentTier === 'free' ? 'Free' : currentTier === 'plus' ? 'Plus' : 'Premium'}</Text>
+          <View>
+            <Text style={styles.currentLabel}>Current Plan</Text>
+            <View style={styles.currentBadge}>
+              <Feather name={currentTier === 'free' ? 'user' : 'award'} size={16} color={currentTier === 'free' ? '#636E72' : '#E9C46A'} />
+              <Text style={styles.currentName}>{currentTier === 'free' ? 'Free' : currentTier === 'plus' ? 'Plus' : 'Premium'}</Text>
+            </View>
           </View>
+          {isSubscribed && (
+            <TouchableOpacity testID="cancel-sub-btn" onPress={handleCancel} style={styles.cancelBtn}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Active Subscription Info */}
+        {isSubscribed && subscription && (
+          <View style={styles.subInfoCard}>
+            <View style={styles.subInfoRow}>
+              <Feather name="check-circle" size={16} color="#40916C" />
+              <Text style={styles.subInfoText}>Active since {new Date(subscription.started_at).toLocaleDateString()}</Text>
+            </View>
+            {subscription.expires_at && (
+              <View style={styles.subInfoRow}>
+                <Feather name="calendar" size={16} color="#636E72" />
+                <Text style={styles.subInfoText}>Renews {new Date(subscription.expires_at).toLocaleDateString()}</Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Plan Selection */}
         <Text style={styles.sectionTitle}>Choose Your Plan</Text>
@@ -99,41 +197,19 @@ export default function PaymentScreen() {
           );
         })}
 
-        {/* Payment Gateway Selection */}
+        {/* Powered by Razorpay */}
         {selectedPlan && (
-          <View style={styles.gatewaySection}>
-            <Text style={styles.sectionTitle}>Payment Method</Text>
+          <View style={styles.gatewayInfo}>
             <View style={styles.gatewayRow}>
-              <TouchableOpacity
-                testID="gateway-stripe"
-                style={[styles.gatewayCard, gateway === 'stripe' && styles.gatewayActive]}
-                onPress={() => setGateway('stripe')}
-              >
-                <View style={styles.gatewayIcon}>
-                  <Feather name="credit-card" size={24} color={gateway === 'stripe' ? '#2D6A4F' : '#636E72'} />
-                </View>
-                <Text style={[styles.gatewayName, gateway === 'stripe' && styles.gatewayNameActive]}>Stripe</Text>
-                <Text style={styles.gatewayDesc}>Credit/Debit Card</Text>
-                {gateway === 'stripe' && <View style={styles.gatewayCheck}><Feather name="check" size={14} color="#FFF" /></View>}
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="gateway-razorpay"
-                style={[styles.gatewayCard, gateway === 'razorpay' && styles.gatewayActive]}
-                onPress={() => setGateway('razorpay')}
-              >
-                <View style={styles.gatewayIcon}>
-                  <Feather name="smartphone" size={24} color={gateway === 'razorpay' ? '#2D6A4F' : '#636E72'} />
-                </View>
-                <Text style={[styles.gatewayName, gateway === 'razorpay' && styles.gatewayNameActive]}>Razorpay</Text>
-                <Text style={styles.gatewayDesc}>UPI, Cards, Wallets</Text>
-                {gateway === 'razorpay' && <View style={styles.gatewayCheck}><Feather name="check" size={14} color="#FFF" /></View>}
-              </TouchableOpacity>
+              <Feather name="shield" size={16} color="#457B9D" />
+              <Text style={styles.gatewayText}>Secured by Razorpay</Text>
             </View>
+            <Text style={styles.gatewayMethods}>UPI · Credit/Debit Cards · Net Banking · Wallets</Text>
           </View>
         )}
 
         {/* Subscribe Button */}
-        {selectedPlan && (
+        {selectedPlan && !isSubscribed && (
           <TouchableOpacity
             testID="subscribe-btn"
             style={[styles.subscribeBtn, processing && styles.subscribeBtnDisabled]}
@@ -147,27 +223,26 @@ export default function PaymentScreen() {
               <>
                 <Feather name="lock" size={18} color="#FFF" />
                 <Text style={styles.subscribeBtnText}>
-                  Subscribe to {selectedPlan === 'plus' ? 'Plus' : 'Premium'} via {gateway === 'stripe' ? 'Stripe' : 'Razorpay'}
+                  Subscribe to {selectedPlan === 'plus' ? 'Plus' : 'Premium'}
                 </Text>
               </>
             )}
           </TouchableOpacity>
         )}
 
-        {/* Security Note */}
+        {/* Security & Legal */}
         <View style={styles.securityNote}>
           <Feather name="shield" size={16} color="#95D5B2" />
-          <Text style={styles.securityText}>Payments are processed securely. Cancel anytime from your account settings. No data is shared with payment providers.</Text>
+          <Text style={styles.securityText}>Your payment info is never stored on our servers. All transactions processed securely via Razorpay.</Text>
         </View>
 
-        {/* Legal */}
         <View style={styles.legalSection}>
           <Text style={styles.legalTitle}>Subscription Terms</Text>
           <Text style={styles.legalText}>• Subscriptions auto-renew monthly unless cancelled</Text>
-          <Text style={styles.legalText}>• Cancel anytime from Settings → Subscription</Text>
-          <Text style={styles.legalText}>• Refunds processed per applicable consumer protection laws</Text>
-          <Text style={styles.legalText}>• Your data remains private regardless of subscription status</Text>
-          <Text style={styles.legalText}>• Price may vary by region (taxes applicable)</Text>
+          <Text style={styles.legalText}>• Cancel anytime — no cancellation fees</Text>
+          <Text style={styles.legalText}>• Refunds per applicable consumer protection laws</Text>
+          <Text style={styles.legalText}>• Your data remains private regardless of plan</Text>
+          <Text style={styles.legalText}>• Prices inclusive of applicable taxes</Text>
         </View>
 
         <View style={{ height: 40 }} />
@@ -184,9 +259,14 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '600', color: '#2D3436', fontFamily: 'Nunito_600SemiBold' },
   content: { paddingHorizontal: 20, paddingTop: 12 },
   currentPlan: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 14, padding: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
-  currentLabel: { fontSize: 14, color: '#636E72' },
-  currentBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F0EBE3', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
-  currentName: { fontSize: 14, fontWeight: '600', color: '#2D3436' },
+  currentLabel: { fontSize: 13, color: '#636E72', marginBottom: 4 },
+  currentBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  currentName: { fontSize: 18, fontWeight: '700', color: '#2D3436' },
+  cancelBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#E76F51' },
+  cancelText: { fontSize: 13, fontWeight: '600', color: '#E76F51' },
+  subInfoCard: { backgroundColor: '#D8F3DC30', borderRadius: 14, padding: 14, marginBottom: 20, gap: 8 },
+  subInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  subInfoText: { fontSize: 14, color: '#2D3436' },
   sectionTitle: { fontSize: 13, fontWeight: '600', color: '#B2BEC3', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 },
   planCard: { backgroundColor: '#FFF', borderRadius: 18, padding: 18, marginBottom: 12, borderWidth: 2, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
   planCardSelected: { borderColor: '#2D6A4F' },
@@ -206,21 +286,16 @@ const styles = StyleSheet.create({
   planFeatures: { gap: 8 },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   featureText: { fontSize: 14, color: '#636E72', flex: 1 },
-  gatewaySection: { marginTop: 20 },
-  gatewayRow: { flexDirection: 'row', gap: 12 },
-  gatewayCard: { flex: 1, backgroundColor: '#FFF', borderRadius: 16, padding: 18, alignItems: 'center', borderWidth: 2, borderColor: 'transparent', gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
-  gatewayActive: { borderColor: '#2D6A4F', backgroundColor: '#D8F3DC08' },
-  gatewayIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0EBE3', justifyContent: 'center', alignItems: 'center' },
-  gatewayName: { fontSize: 16, fontWeight: '600', color: '#2D3436' },
-  gatewayNameActive: { color: '#2D6A4F' },
-  gatewayDesc: { fontSize: 12, color: '#B2BEC3' },
-  gatewayCheck: { position: 'absolute', top: 10, right: 10, width: 22, height: 22, borderRadius: 11, backgroundColor: '#2D6A4F', justifyContent: 'center', alignItems: 'center' },
-  subscribeBtn: { backgroundColor: '#2D6A4F', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16, marginTop: 24, shadowColor: '#2D6A4F', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+  gatewayInfo: { backgroundColor: '#FFF', borderRadius: 14, padding: 16, marginTop: 8, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  gatewayRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  gatewayText: { fontSize: 15, fontWeight: '600', color: '#2D3436' },
+  gatewayMethods: { fontSize: 13, color: '#636E72' },
+  subscribeBtn: { backgroundColor: '#2D6A4F', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16, marginTop: 20, shadowColor: '#2D6A4F', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
   subscribeBtnDisabled: { opacity: 0.6 },
   subscribeBtnText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
   securityNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#D8F3DC30', borderRadius: 12, padding: 14, marginTop: 20 },
   securityText: { fontSize: 13, color: '#636E72', lineHeight: 20, flex: 1 },
-  legalSection: { marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.04)' },
+  legalSection: { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.04)' },
   legalTitle: { fontSize: 14, fontWeight: '600', color: '#636E72', marginBottom: 10 },
   legalText: { fontSize: 13, color: '#B2BEC3', lineHeight: 22 },
 });
