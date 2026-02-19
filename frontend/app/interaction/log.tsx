@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio';
 import { api } from '../../src/api';
 import { getInitials } from '../../src/theme';
 
@@ -17,8 +17,8 @@ export default function LogInteraction() {
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(!params.contactId);
 
-  // Voice recording state
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  // Voice recording state - expo-audio
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [transcribing, setTranscribing] = useState(false);
@@ -36,11 +36,9 @@ export default function LogInteraction() {
 
   async function startRecording() {
     try {
-      const perm = await Audio.requestPermissionsAsync();
-      if (!perm.granted) return;
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording: rec } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      setRecording(rec);
+      const permStatus = await AudioModule.requestRecordingPermissionsAsync();
+      if (!permStatus.granted) return;
+      recorder.record();
       setIsRecording(true);
       setRecordingDuration(0);
       timerRef.current = setInterval(() => { setRecordingDuration(d => d + 1); }, 1000);
@@ -48,13 +46,12 @@ export default function LogInteraction() {
   }
 
   async function stopRecording() {
-    if (!recording) return;
+    if (!isRecording) return;
     setIsRecording(false);
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      setRecording(null);
+      await recorder.stop();
+      const uri = recorder.uri;
       if (uri) {
         setTranscribing(true);
         setInteractionType('voice');
