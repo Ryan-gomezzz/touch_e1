@@ -73,4 +73,4 @@ class TestIteration3Smoke:
         assert response.status_code == 200
         data = response.json()
         assert "overall_score" in data
-        assert "top_contacts" in data
+        assert "pinned_contacts" in data
