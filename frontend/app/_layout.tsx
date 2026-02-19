@@ -35,6 +35,10 @@ export default function RootLayout() {
         <Stack.Screen name="interaction/log" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="callprep/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="goals" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="premium" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="shared" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="widget" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="reminders" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </>
   );
