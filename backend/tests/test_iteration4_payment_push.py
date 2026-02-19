@@ -6,7 +6,15 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL').rstrip('/')
+# Load environment from frontend .env
+from pathlib import Path
+from dotenv import load_dotenv
+
+frontend_env = Path('/app/frontend/.env')
+if frontend_env.exists():
+    load_dotenv(frontend_env)
+
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://human-first-mobile.preview.emergentagent.com').rstrip('/')
 
 class TestRazorpayPayment:
     """Razorpay payment integration tests (test mode)"""
