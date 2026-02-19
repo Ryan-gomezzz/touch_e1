@@ -42,6 +42,15 @@ export default function ContactDetail() {
     ]);
   }
 
+  async function loadCalendarSuggestions() {
+    setCalendarLoading(true);
+    try {
+      const data = await api.getSuggestedTimes(id!);
+      setCalendarData(data);
+    } catch (e) { console.error(e); }
+    finally { setCalendarLoading(false); }
+  }
+
   if (loading || !contact) {
     return <SafeAreaView style={styles.container}><View style={styles.center}><ActivityIndicator size="large" color="#2D6A4F" /></View></SafeAreaView>;
   }
