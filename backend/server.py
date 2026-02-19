@@ -112,6 +112,8 @@ class SettingsResponse(BaseModel):
     onboarding_completed: bool = False
     privacy_mode: bool = True
     data_encryption: bool = True
+    shared_mode: bool = False
+    premium_tier: str = "free"
 
 class SettingsUpdate(BaseModel):
     notification_intensity: Optional[int] = None
@@ -120,6 +122,23 @@ class SettingsUpdate(BaseModel):
     onboarding_completed: Optional[bool] = None
     privacy_mode: Optional[bool] = None
     data_encryption: Optional[bool] = None
+    shared_mode: Optional[bool] = None
+    premium_tier: Optional[str] = None
+
+class SharedInvite(BaseModel):
+    partner_name: str
+    partner_email: Optional[str] = None
+    shared_contact_ids: List[str] = []
+    mode: str = "couple"
+
+class ReminderResponse(BaseModel):
+    id: str
+    contact_id: str
+    contact_name: str
+    message: str
+    scheduled_for: str
+    priority: str = "gentle"
+    status: str = "pending"
 
 # ===================== HELPERS =====================
 
