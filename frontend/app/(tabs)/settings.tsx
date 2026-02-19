@@ -95,6 +95,46 @@ export default function SettingsScreen() {
             </View>
             <Feather name="chevron-right" size={18} color="#B2BEC3" />
           </TouchableOpacity>
+          <TouchableOpacity testID="settings-reminders-btn" style={styles.settingRow} onPress={() => router.push('/reminders')}>
+            <View style={[styles.iconBox, { backgroundColor: '#D8F3DC' }]}>
+              <Feather name="bell" size={18} color="#2D6A4F" />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Gentle Reminders</Text>
+              <Text style={styles.settingSublabel}>View pending connection nudges</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color="#B2BEC3" />
+          </TouchableOpacity>
+          <TouchableOpacity testID="settings-shared-btn" style={styles.settingRow} onPress={() => router.push('/shared')}>
+            <View style={[styles.iconBox, { backgroundColor: '#E9C46A20' }]}>
+              <Feather name="users" size={18} color="#E9C46A" />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Shared Mode</Text>
+              <Text style={styles.settingSublabel}>Share tracking with partner or co-parent</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color="#B2BEC3" />
+          </TouchableOpacity>
+          <TouchableOpacity testID="settings-widget-btn" style={styles.settingRow} onPress={() => router.push('/widget')}>
+            <View style={[styles.iconBox, { backgroundColor: '#F0EBE3' }]}>
+              <Feather name="smartphone" size={18} color="#636E72" />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Home Widget</Text>
+              <Text style={styles.settingSublabel}>Set up your home screen widget</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color="#B2BEC3" />
+          </TouchableOpacity>
+          <TouchableOpacity testID="settings-premium-btn" style={styles.settingRow} onPress={() => router.push('/premium')}>
+            <View style={[styles.iconBox, { backgroundColor: '#E9C46A20' }]}>
+              <Feather name="award" size={18} color="#E9C46A" />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Touch Premium</Text>
+              <Text style={styles.settingSublabel}>Unlock advanced features</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color="#B2BEC3" />
+          </TouchableOpacity>
         </View>
 
         {/* Data */}
