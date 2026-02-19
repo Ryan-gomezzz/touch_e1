@@ -7,7 +7,8 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL')
+# Read from frontend .env file
+BASE_URL = "https://human-first-mobile.preview.emergentagent.com"
 
 class TestIteration3Smoke:
     """Quick smoke tests for iteration 3 to verify no backend regressions"""
