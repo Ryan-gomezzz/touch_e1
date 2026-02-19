@@ -120,13 +120,53 @@ export default function ContactDetail() {
             </View>
             <Text style={styles.actionText}>Call Prep</Text>
           </TouchableOpacity>
-          <TouchableOpacity testID="view-prompts-btn" style={styles.actionBtn} onPress={() => router.push(`/callprep/${id}`)}>
+          <TouchableOpacity testID="view-calendar-btn" style={styles.actionBtn} onPress={loadCalendarSuggestions}>
             <View style={[styles.actionIcon, { backgroundColor: '#E9C46A30' }]}>
-              <Feather name="message-circle" size={18} color="#E9C46A" />
+              <Feather name="calendar" size={18} color="#E9C46A" />
+            </View>
+            <Text style={styles.actionText}>Schedule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity testID="view-prompts-btn" style={styles.actionBtn} onPress={() => router.push(`/callprep/${id}`)}>
+            <View style={[styles.actionIcon, { backgroundColor: '#F0EBE340' }]}>
+              <Feather name="message-circle" size={18} color="#636E72" />
             </View>
             <Text style={styles.actionText}>Prompts</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Calendar Suggestions */}
+        {calendarLoading && (
+          <View style={styles.section}>
+            <View style={styles.calendarLoading}>
+              <ActivityIndicator size="small" color="#2D6A4F" />
+              <Text style={styles.calendarLoadingText}>Finding best times...</Text>
+            </View>
+          </View>
+        )}
+        {calendarData && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Best Times to Connect</Text>
+            <View style={styles.calendarCard}>
+              {calendarData.suggested_times?.map((t: any, i: number) => (
+                <View key={i} style={styles.calendarSlot}>
+                  <View style={styles.calendarSlotIcon}>
+                    <Feather name="clock" size={14} color="#2D6A4F" />
+                  </View>
+                  <View style={styles.calendarSlotInfo}>
+                    <Text style={styles.calendarSlotDay}>{t.day} at {t.time}</Text>
+                    <Text style={styles.calendarSlotReason}>{t.reason}</Text>
+                  </View>
+                </View>
+              ))}
+              {calendarData.availability_tip && (
+                <View style={styles.calendarTip}>
+                  <Feather name="info" size={14} color="#457B9D" />
+                  <Text style={styles.calendarTipText}>{calendarData.availability_tip}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Memory Bank */}
         <View style={styles.section}>
