@@ -26,8 +26,8 @@ export default function ConnectionRing({ name, health, avatarColor, size = 80, o
       activeOpacity={0.7}
       style={[styles.container, { width: size + 12, alignItems: 'center' }]}
     >
-      <View style={{ width: size, height: size }}>
-        <Svg width={size} height={size}>
+      <View style={{ width: size, height: size, pointerEvents: 'none' }}>
+        <Svg width={size} height={size} style={{ pointerEvents: 'none' }}>
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -50,7 +50,7 @@ export default function ConnectionRing({ name, health, avatarColor, size = 80, o
             origin={`${size / 2}, ${size / 2}`}
           />
         </Svg>
-        <View style={[styles.avatar, { width: size - 16, height: size - 16, borderRadius: (size - 16) / 2, backgroundColor: avatarColor, top: 8, left: 8 }]}>
+        <View style={[styles.avatar, { width: size - 16, height: size - 16, borderRadius: (size - 16) / 2, backgroundColor: avatarColor, top: 8, left: 8, pointerEvents: 'none' }]}>
           <Text style={[styles.initials, { fontSize: size * 0.25 }]}>{getInitials(name)}</Text>
         </View>
       </View>
