@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../src/api';
 import { getInitials, getHealthColor } from '../src/theme';
+import { requestNotificationPermissions, scheduleRemindersForContacts, scheduleDailyCheck, scheduleWeeklyReflection, cancelAllNotifications, getScheduledCount } from '../src/notifications';
 
 export default function RemindersScreen() {
   const router = useRouter();
   const [reminders, setReminders] = useState<any[]>([]);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [scheduledCount, setScheduledCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
