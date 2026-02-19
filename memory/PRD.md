@@ -152,7 +152,24 @@ Touch is a privacy-first personal relationship CRM designed to help busy people 
 - Data export (GDPR-ready)
 - Complete data deletion
 - No user tracking or telemetry
-- Transparent permissions (Microphone, Contacts, Calendar)
+- Transparent permissions (Microphone, Contacts, Calendar, Notifications)
+- Clear subscription terms displayed in-app
+- Cancel anytime policy
+- Consumer protection law compliant refund terms
+
+## Play Store Production Readiness
+- **iOS**: Bundle ID `com.touch.relationship.crm`, iOS 14+, all permission strings under 10 words
+- **Android**: Package `com.touch.relationship.crm`, versionCode 1, all required permissions declared
+- **Permissions**: RECORD_AUDIO, READ_CONTACTS, READ_CALENDAR, POST_NOTIFICATIONS, VIBRATE, SCHEDULE_EXACT_ALARM
+- **SDK**: Expo SDK 54 compatible (expo-audio, expo-notifications)
+- **Notifications**: expo-notifications plugin configured with custom icon and channels
+- **Splash**: Custom splash screen with Touch branding
+
+## Payment Gateway (Provisioned)
+- **Stripe**: Credit/Debit card payments (ready for integration)
+- **Razorpay**: UPI, Cards, Wallets (ready for integration)
+- **MOCKED**: Payment processing currently simulated — real gateway integration pending user decision
+- Plan selection UI, gateway toggle, and subscription flow all built and tested
 
 ## Business Enhancement
 - **Freemium model potential**: Free tier with 5 contacts, Premium with unlimited contacts + advanced AI insights
