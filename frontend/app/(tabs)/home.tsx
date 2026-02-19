@@ -159,19 +159,44 @@ export default function HomeScreen() {
               <View style={[styles.actionIcon, { backgroundColor: '#D8F3DC' }]}>
                 <Feather name="edit-3" size={20} color="#2D6A4F" />
               </View>
-              <Text style={styles.actionText}>Log Interaction</Text>
+              <Text style={styles.actionText}>Log Touch</Text>
             </TouchableOpacity>
-            <TouchableOpacity testID="quick-goals-btn" style={styles.actionCard} onPress={() => router.push('/goals')}>
-              <View style={[styles.actionIcon, { backgroundColor: '#A8DADC40' }]}>
-                <Feather name="target" size={20} color="#457B9D" />
+            <TouchableOpacity testID="quick-reminders-btn" style={styles.actionCard} onPress={() => router.push('/reminders')}>
+              <View style={[styles.actionIcon, { backgroundColor: '#FFEEE9' }]}>
+                <Feather name="bell" size={20} color="#E76F51" />
               </View>
-              <Text style={styles.actionText}>Goals</Text>
+              <Text style={styles.actionText}>Reminders</Text>
             </TouchableOpacity>
             <TouchableOpacity testID="quick-insights-btn" style={styles.actionCard} onPress={() => router.push('/(tabs)/insights')}>
               <View style={[styles.actionIcon, { backgroundColor: '#E9C46A30' }]}>
                 <Feather name="trending-up" size={20} color="#E9C46A" />
               </View>
               <Text style={styles.actionText}>Insights</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* More Features */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>More</Text>
+          <View style={styles.actionsRow}>
+            <TouchableOpacity testID="quick-goals-btn" style={styles.actionCard} onPress={() => router.push('/goals')}>
+              <View style={[styles.actionIcon, { backgroundColor: '#A8DADC40' }]}>
+                <Feather name="target" size={20} color="#457B9D" />
+              </View>
+              <Text style={styles.actionText}>Goals</Text>
+            </TouchableOpacity>
+            <TouchableOpacity testID="quick-shared-btn" style={styles.actionCard} onPress={() => router.push('/shared')}>
+              <View style={[styles.actionIcon, { backgroundColor: '#E9C46A20' }]}>
+                <Feather name="users" size={20} color="#E9C46A" />
+              </View>
+              <Text style={styles.actionText}>Shared</Text>
+            </TouchableOpacity>
+            <TouchableOpacity testID="quick-widget-btn" style={styles.actionCard} onPress={() => router.push('/widget')}>
+              <View style={[styles.actionIcon, { backgroundColor: '#F0EBE3' }]}>
+                <Feather name="smartphone" size={20} color="#636E72" />
+              </View>
+              <Text style={styles.actionText}>Widget</Text>
             </TouchableOpacity>
           </View>
         </View>
