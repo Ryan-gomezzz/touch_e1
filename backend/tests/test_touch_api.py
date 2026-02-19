@@ -7,7 +7,9 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', '').rstrip('/')
+# Get backend URL from environment
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL') or os.environ.get('BACKEND_URL', 'https://human-first-mobile.preview.emergentagent.com')
+BASE_URL = BASE_URL.rstrip('/')
 
 class TestHealthAndSeed:
     """Health check and seed data tests"""
