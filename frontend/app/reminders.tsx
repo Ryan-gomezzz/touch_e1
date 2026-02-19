@@ -20,8 +20,36 @@ export default function RemindersScreen() {
     try {
       const data = await api.getPendingReminders();
       setReminders(data.reminders || []);
+      const count = await getScheduledCount();
+      setScheduledCount(count);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setRefreshing(false); }
+  }
+
+  async function enableNotifications() {
+    const granted = await requestNotificationPermissions();
+    if (!granted) {
+      Alert.alert('Permissions Required', 'Please enable notifications in your device settings to receive gentle reminders.');
+      return;
+    }
+    setNotifEnabled(true);
+    try {
+      await scheduleDailyCheck();
+      await scheduleWeeklyReflection();
+      if (reminders.length > 0) {
+        await scheduleRemindersForContacts(reminders);
+      }
+      const count = await getScheduledCount();
+      setScheduledCount(count);
+      Alert.alert('Notifications Enabled', 'You\'ll receive gentle reminders to stay connected.');
+    } catch (e) { console.error(e); }
+  }
+
+  async function disableNotifications() {
+    await cancelAllNotifications();
+    setNotifEnabled(false);
+    setScheduledCount(0);
+    Alert.alert('Notifications Disabled', 'You won\'t receive any reminders.');
   }
 
   if (loading) return <SafeAreaView style={styles.container}><View style={styles.center}><ActivityIndicator size="large" color="#2D6A4F" /></View></SafeAreaView>;
