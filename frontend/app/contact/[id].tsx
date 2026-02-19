@@ -12,6 +12,8 @@ export default function ContactDetail() {
   const [contact, setContact] = useState<any>(null);
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calendarData, setCalendarData] = useState<any>(null);
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
   useFocusEffect(useCallback(() => { loadData(); }, [id]));
 
