@@ -166,10 +166,26 @@ Touch is a privacy-first personal relationship CRM designed to help busy people 
 - **Splash**: Custom splash screen with Touch branding
 
 ## Payment Gateway (Provisioned)
-- **Stripe**: Credit/Debit card payments (ready for integration)
-- **Razorpay**: UPI, Cards, Wallets (ready for integration)
-- **MOCKED**: Payment processing currently simulated — real gateway integration pending user decision
-- Plan selection UI, gateway toggle, and subscription flow all built and tested
+- **Razorpay**: Full integration with order creation, payment verification, subscription management
+- **Test Mode**: Currently using `rzp_test_PLACEHOLDER` keys — replace with real keys from Razorpay Dashboard
+- **Plans**: Plus (₹499/mo), Premium (₹999/mo) with auto-renewal
+- **Features**: Create order → Razorpay checkout → Verify signature → Activate subscription → Cancel anytime
+- **MOCKED in web preview**: Real `react-native-razorpay` checkout works in native EAS builds only
+
+## Push Notifications
+- **Service**: Expo Push Service (no Firebase required)
+- **Channels**: touch-reminders (default), touch-weekly (low priority)
+- **Types**: Contact reminders (staggered), Daily check-ins, Weekly reflections
+- **Backend**: Token registration + send via `https://exp.host/--/api/v2/push/send`
+- **Automation**: Set up cron for `POST /api/push/send-reminders` for daily automated pushes
+
+## EAS Build Configuration
+- **File**: `/app/frontend/eas.json`
+- **Profiles**: development (APK), preview (APK), production (AAB)
+- **Commands**:
+  - Test: `eas build --platform android --profile preview`
+  - Production: `eas build --platform android --profile production`
+  - Submit: `eas submit --platform android --profile production`
 
 ## Business Enhancement
 - **Freemium model potential**: Free tier with 5 contacts, Premium with unlimited contacts + advanced AI insights
