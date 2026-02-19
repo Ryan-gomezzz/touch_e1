@@ -91,8 +91,7 @@ export default function PremiumScreen() {
                 <TouchableOpacity
                   testID={`upgrade-${plan.id}-btn`}
                   style={[styles.upgradeBtn, isHighlighted && styles.upgradeBtnPrimary]}
-                  onPress={() => handleUpgrade(plan.id)}
-                  disabled={upgrading === plan.id}
+                  onPress={() => router.push('/payment')}
                 >
                   {upgrading === plan.id ? (
                     <ActivityIndicator size="small" color="#FFF" />
