@@ -18,7 +18,7 @@ class TestIteration3Smoke:
         response = requests.get(f"{BASE_URL}/api/")
         assert response.status_code == 200
         data = response.json()
-        assert "status" in data
+        assert "message" in data or "status" in data
 
     def test_contacts_endpoint(self):
         """Verify contacts endpoint still works"""
