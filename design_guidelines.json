@@ -1,0 +1,215 @@
+{
+  "identity": {
+    "name": "Touch",
+    "mission": "To help busy people stay emotionally consistent with loved ones through a calm, non-judgmental interface.",
+    "vibe": "Calm, Warm, Minimal, Organic, Trustworthy",
+    "keywords": ["Sanctuary", "Memory", "Gentle", "Rhythm", "Growth"]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Lora",
+      "body": "Nunito",
+      "data": "Inter"
+    },
+    "scale": {
+      "h1": { "fontSize": 32, "lineHeight": 40, "fontWeight": "600", "letterSpacing": -0.5 },
+      "h2": { "fontSize": 24, "lineHeight": 32, "fontWeight": "600", "letterSpacing": -0.25 },
+      "h3": { "fontSize": 20, "lineHeight": 28, "fontWeight": "600" },
+      "body_lg": { "fontSize": 18, "lineHeight": 28, "fontWeight": "400" },
+      "body_md": { "fontSize": 16, "lineHeight": 24, "fontWeight": "400" },
+      "body_sm": { "fontSize": 14, "lineHeight": 20, "fontWeight": "400" },
+      "caption": { "fontSize": 12, "lineHeight": 16, "fontWeight": "500", "textTransform": "uppercase", "letterSpacing": 0.5 }
+    },
+    "installation_guide": "Install using 'npx expo install expo-font @expo-google-fonts/lora @expo-google-fonts/nunito @expo-google-fonts/inter'"
+  },
+  "colors": {
+    "light": {
+      "background": {
+        "primary": "#F9F7F2",
+        "secondary": "#FFFFFF",
+        "tertiary": "#F0EBE3"
+      },
+      "text": {
+        "primary": "#2D3436",
+        "secondary": "#636E72",
+        "tertiary": "#B2BEC3",
+        "inverse": "#FFFFFF"
+      },
+      "brand": {
+        "primary": "#2D6A4F",
+        "secondary": "#40916C",
+        "tertiary": "#D8F3DC"
+      },
+      "status": {
+        "success": "#95D5B2",
+        "warning": "#F4A261",
+        "info": "#A8DADC",
+        "error": "#E76F51"
+      },
+      "border": "rgba(0,0,0,0.06)"
+    },
+    "dark": {
+      "background": {
+        "primary": "#1A1C1E",
+        "secondary": "#262A2D",
+        "tertiary": "#323639"
+      },
+      "text": {
+        "primary": "#E8E8E8",
+        "secondary": "#A0A0A0",
+        "tertiary": "#606060",
+        "inverse": "#1A1C1E"
+      },
+      "brand": {
+        "primary": "#40916C",
+        "secondary": "#52B788",
+        "tertiary": "#1B4332"
+      },
+      "status": {
+        "success": "#52B788",
+        "warning": "#E9C46A",
+        "info": "#457B9D",
+        "error": "#E76F51"
+      },
+      "border": "rgba(255,255,255,0.08)"
+    },
+    "gradients": {
+      "warm_glow": ["#F9F7F2", "#F0EBE3"],
+      "connection_ring": ["#40916C", "#95D5B2"]
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "2xl": 48,
+    "3xl": 64,
+    "layout": {
+      "screen_padding": 20,
+      "card_padding": 16,
+      "section_gap": 32
+    }
+  },
+  "layout": {
+    "border_radius": {
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "pill": 999
+    },
+    "shadows": {
+      "soft": {
+        "shadowColor": "#000",
+        "shadowOffset": { "width": 0, "height": 4 },
+        "shadowOpacity": 0.05,
+        "shadowRadius": 12,
+        "elevation": 2
+      },
+      "floating": {
+        "shadowColor": "#000",
+        "shadowOffset": { "width": 0, "height": 8 },
+        "shadowOpacity": 0.08,
+        "shadowRadius": 24,
+        "elevation": 8
+      }
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": {
+        "backgroundColor": "brand.primary",
+        "borderRadius": "pill",
+        "height": 56,
+        "paddingHorizontal": 32
+      },
+      "secondary": {
+        "backgroundColor": "background.tertiary",
+        "borderRadius": "pill",
+        "height": 56
+      },
+      "ghost": {
+        "backgroundColor": "transparent"
+      }
+    },
+    "cards": {
+      "contact": {
+        "backgroundColor": "background.secondary",
+        "borderRadius": "lg",
+        "padding": "md",
+        "shadow": "soft"
+      },
+      "interaction": {
+        "backgroundColor": "background.tertiary",
+        "borderRadius": "md",
+        "padding": "md"
+      }
+    },
+    "connection_rings": {
+      "concept": "Circular progress indicators showing relationship health. Fills clockwise.",
+      "colors": {
+        "healthy": "status.success",
+        "fading": "status.warning",
+        "urgent": "status.error"
+      },
+      "strokeWidth": 6
+    }
+  },
+  "icons": {
+    "library": "@expo/vector-icons",
+    "family": "Feather",
+    "alternates": "Ionicons",
+    "style": "Stroke width 2px, rounded ends where possible"
+  },
+  "motion": {
+    "transitions": {
+      "default": { "type": "spring", "damping": 20, "stiffness": 90 },
+      "bouncy": { "type": "spring", "damping": 12, "stiffness": 100 },
+      "gentle": { "type": "timing", "duration": 400, "easing": "ease-out" }
+    },
+    "interactions": {
+      "press_scale": 0.96,
+      "active_opacity": 0.7
+    }
+  },
+  "assets": {
+    "images": {
+      "avatars": [
+        "https://images.pexels.com/photos/33534039/pexels-photo-33534039.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "https://images.pexels.com/photos/33534041/pexels-photo-33534041.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+      ],
+      "textures": [
+        "https://images.pexels.com/photos/34860703/pexels-photo-34860703.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "https://images.pexels.com/photos/7599590/pexels-photo-7599590.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+      ]
+    },
+    "placeholder_logic": "If avatar is missing, use initials with 'brand.tertiary' background and 'brand.primary' text."
+  },
+  "accessibility": {
+    "minimum_touch_target": 44,
+    "contrast_ratios": "Ensure 4.5:1 for body text",
+    "text_scaling": "Allow dynamic type scaling",
+    "reduced_motion": "Respect user preference for reduced motion"
+  },
+  "implementation_guide": {
+    "platform": "Expo React Native",
+    "styling_engine": "StyleSheet.create",
+    "safe_area": "Always wrap screen content in SafeAreaView or use useSafeAreaInsets",
+    "keyboard_handling": "Wrap forms in KeyboardAvoidingView with behavior='padding' (iOS) or 'height' (Android)",
+    "icons_usage": "import { Feather } from '@expo/vector-icons'; <Feather name='heart' size={24} color={colors.text.primary} />",
+    "dark_mode": "Use useColorScheme() hook to toggle theme tokens."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "NEVER use raw colors in styles; always refer to the theme tokens.",
+    "Do NOT use CSS files. Everything must be in JS/TS files using StyleSheet.",
+    "Prioritize 'View' and 'Text' components over custom divs/spans.",
+    "Use 'TouchableOpacity' or 'Pressable' for all interactive elements.",
+    "Ensure the 'Connection Ring' is the visual anchor of the dashboard.",
+    "Avoid red for alerts; use Soft Amber (#F4A261) or Burnt Orange (#E76F51) for high urgency to maintain calm.",
+    "All forms (Add Contact, Log Interaction) should feel like a conversation, not a tax audit.",
+    "Use 'sonner-native' or a custom unobtrusive toast for notifications, placed at the top.",
+    "For the Memory Bank, use a card-based masonry or simple list layout with soft dividers."
+  ]
+}
