@@ -39,6 +39,7 @@ export default function RootLayout() {
         <Stack.Screen name="shared" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="widget" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="reminders" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="payment" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
     </>
   );
