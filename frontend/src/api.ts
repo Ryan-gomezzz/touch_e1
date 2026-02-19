@@ -65,6 +65,24 @@ export const api = {
   exportData: () => request('/data/export'),
   deleteAllData: () => request('/data/delete-all', { method: 'DELETE' }),
 
+  // Notifications
+  getPendingReminders: () => request('/notifications/pending'),
+
+  // Shared Mode
+  createSharedInvite: (data: any) => request('/shared/invite', { method: 'POST', body: JSON.stringify(data) }),
+  getSharedInvites: () => request('/shared/invites'),
+  getSharedContacts: () => request('/shared/contacts'),
+
+  // Calendar
+  getSuggestedTimes: (contactId: string) => request(`/calendar/suggest-times/${contactId}`),
+
+  // Premium
+  getPremiumStatus: () => request('/premium/status'),
+  upgradePremium: (tier: string) => request(`/premium/upgrade?tier=${tier}`, { method: 'PUT' }),
+
+  // Widget
+  getWidgetData: () => request('/widget/data'),
+
   // Seed
   seed: () => request('/seed', { method: 'POST' }),
 };
