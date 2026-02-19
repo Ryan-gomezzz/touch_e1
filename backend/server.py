@@ -864,6 +864,240 @@ async def get_widget_data():
         "suggested_name": dashboard.get("suggested_contact", {}).get("name") if dashboard.get("suggested_contact") else None,
     }
 
+# --- RAZORPAY PAYMENT ---
+@api_router.post("/payment/create-order")
+async def create_razorpay_order(plan_id: str = "plus"):
+    """Create a Razorpay order for subscription"""
+    plan_prices = {"plus": 499, "premium": 999}  # in INR (paise = x100)
+    plan_names = {"plus": "Touch Plus", "premium": "Touch Premium"}
+
+    if plan_id not in plan_prices:
+        raise HTTPException(status_code=400, detail="Invalid plan")
+
+    amount = plan_prices[plan_id] * 100  # Convert to paise
+
+    if RAZORPAY_KEY_ID == 'rzp_test_PLACEHOLDER':
+        # Test mode - return mock order
+        order_id = f"order_test_{uuid.uuid4().hex[:16]}"
+        order_data = {
+            "order_id": order_id,
+            "amount": amount,
+            "currency": "INR",
+            "plan_id": plan_id,
+            "plan_name": plan_names[plan_id],
+            "razorpay_key_id": RAZORPAY_KEY_ID,
+            "test_mode": True,
+        }
+        await db.orders.insert_one({
+            **order_data, "_id": order_id, "status": "created", "created_at": now_iso(),
+        })
+        return order_data
+
+    try:
+        import razorpay
+        rz_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+        order = rz_client.order.create({
+            "amount": amount,
+            "currency": "INR",
+            "receipt": f"touch_{plan_id}_{uuid.uuid4().hex[:8]}",
+            "notes": {"plan_id": plan_id, "plan_name": plan_names[plan_id]},
+        })
+        order_data = {
+            "order_id": order["id"],
+            "amount": order["amount"],
+            "currency": order["currency"],
+            "plan_id": plan_id,
+            "plan_name": plan_names[plan_id],
+            "razorpay_key_id": RAZORPAY_KEY_ID,
+            "test_mode": False,
+        }
+        await db.orders.insert_one({
+            **order_data, "_id": order["id"], "status": "created", "created_at": now_iso(),
+        })
+        return order_data
+    except Exception as e:
+        logger.error(f"Razorpay order error: {e}")
+        raise HTTPException(status_code=500, detail=f"Payment order creation failed: {str(e)}")
+
+@api_router.post("/payment/verify")
+async def verify_razorpay_payment(
+    razorpay_order_id: str,
+    razorpay_payment_id: str,
+    razorpay_signature: str,
+    plan_id: str = "plus",
+):
+    """Verify Razorpay payment and activate subscription"""
+    order = await db.orders.find_one({"_id": razorpay_order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.get("test_mode"):
+        # Test mode - auto-verify
+        await db.orders.update_one(
+            {"order_id": razorpay_order_id},
+            {"$set": {"status": "paid", "payment_id": razorpay_payment_id, "paid_at": now_iso()}},
+        )
+        await db.settings.update_one({"id": "default"}, {"$set": {"premium_tier": plan_id}}, upsert=True)
+
+        sub = {
+            "id": str(uuid.uuid4()),
+            "plan_id": plan_id,
+            "order_id": razorpay_order_id,
+            "payment_id": razorpay_payment_id,
+            "status": "active",
+            "amount": order.get("amount", 0),
+            "currency": order.get("currency", "INR"),
+            "started_at": now_iso(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+        }
+        await db.subscriptions.insert_one({**sub, "_id": sub["id"]})
+        return {"verified": True, "plan_id": plan_id, "message": "Subscription activated (test mode)"}
+
+    try:
+        import razorpay, hmac, hashlib
+        generated_signature = hmac.new(
+            RAZORPAY_KEY_SECRET.encode(),
+            f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+
+        if generated_signature != razorpay_signature:
+            raise HTTPException(status_code=400, detail="Payment verification failed")
+
+        await db.orders.update_one(
+            {"order_id": razorpay_order_id},
+            {"$set": {"status": "paid", "payment_id": razorpay_payment_id, "signature": razorpay_signature, "paid_at": now_iso()}},
+        )
+        await db.settings.update_one({"id": "default"}, {"$set": {"premium_tier": plan_id}}, upsert=True)
+
+        sub = {
+            "id": str(uuid.uuid4()),
+            "plan_id": plan_id,
+            "order_id": razorpay_order_id,
+            "payment_id": razorpay_payment_id,
+            "status": "active",
+            "amount": order.get("amount", 0),
+            "currency": order.get("currency", "INR"),
+            "started_at": now_iso(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+        }
+        await db.subscriptions.insert_one({**sub, "_id": sub["id"]})
+        return {"verified": True, "plan_id": plan_id, "message": "Subscription activated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Razorpay verify error: {e}")
+        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
+
+@api_router.get("/payment/subscription")
+async def get_subscription():
+    sub = await db.subscriptions.find_one({"status": "active"}, {"_id": 0}, sort=[("started_at", -1)])
+    if not sub:
+        return {"active": False, "plan_id": "free"}
+    return {"active": True, **sub}
+
+@api_router.post("/payment/cancel")
+async def cancel_subscription():
+    await db.subscriptions.update_many({"status": "active"}, {"$set": {"status": "cancelled", "cancelled_at": now_iso()}})
+    await db.settings.update_one({"id": "default"}, {"$set": {"premium_tier": "free"}})
+    return {"message": "Subscription cancelled", "plan_id": "free"}
+
+# --- EXPO PUSH NOTIFICATIONS ---
+class PushTokenRegister(BaseModel):
+    token: str
+    device_id: Optional[str] = None
+    platform: Optional[str] = None
+
+@api_router.post("/push/register")
+async def register_push_token(data: PushTokenRegister):
+    """Register an Expo Push Token for remote notifications"""
+    token_data = {
+        "token": data.token,
+        "device_id": data.device_id or str(uuid.uuid4()),
+        "platform": data.platform or "unknown",
+        "registered_at": now_iso(),
+    }
+    await db.push_tokens.update_one(
+        {"token": data.token},
+        {"$set": token_data},
+        upsert=True,
+    )
+    return {"registered": True, "token": data.token}
+
+@api_router.post("/push/send")
+async def send_push_notification(title: str, body: str, data: Optional[dict] = None):
+    """Send push notification to all registered devices via Expo Push Service"""
+    import httpx
+    tokens = await db.push_tokens.find({}, {"_id": 0}).to_list(100)
+    if not tokens:
+        return {"sent": 0, "message": "No registered devices"}
+
+    messages = []
+    for t in tokens:
+        msg = {"to": t["token"], "title": title, "body": body, "sound": "default"}
+        if data:
+            msg["data"] = data
+        messages.append(msg)
+
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=messages,
+                headers={"Accept": "application/json", "Content-Type": "application/json"},
+            )
+            result = response.json()
+            return {"sent": len(messages), "response": result}
+    except Exception as e:
+        logger.error(f"Push send error: {e}")
+        return {"sent": 0, "error": str(e)}
+
+@api_router.post("/push/send-reminders")
+async def send_reminder_push_notifications():
+    """Send push notifications for contacts that need attention"""
+    import httpx
+    tokens = await db.push_tokens.find({}, {"_id": 0}).to_list(100)
+    if not tokens:
+        return {"sent": 0, "message": "No registered devices"}
+
+    contacts = await db.contacts.find({"is_archived": False}, {"_id": 0}).to_list(500)
+    settings = await db.settings.find_one({"id": "default"}, {"_id": 0})
+    low_pressure = settings.get("low_pressure_mode", False) if settings else False
+
+    reminders = []
+    for c in contacts:
+        health = calc_connection_health(c.get("last_interaction_at"), c.get("frequency_days", 7))
+        threshold = 20 if low_pressure else 40
+        if health < threshold:
+            reminders.append(c)
+
+    if not reminders:
+        return {"sent": 0, "message": "All connections healthy"}
+
+    messages = []
+    for r in reminders[:3]:
+        for t in tokens:
+            messages.append({
+                "to": t["token"],
+                "title": f"Touch — {r['name']}",
+                "body": f"{r['name']} might appreciate hearing from you today.",
+                "sound": "default",
+                "data": {"contactId": r["id"], "type": "reminder"},
+            })
+
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=messages,
+                headers={"Accept": "application/json", "Content-Type": "application/json"},
+            )
+            result = response.json()
+            return {"sent": len(messages), "contacts_notified": len(reminders[:3]), "response": result}
+    except Exception as e:
+        logger.error(f"Push reminders error: {e}")
+        return {"sent": 0, "error": str(e)}
+
 app.include_router(api_router)
 
 app.add_middleware(
